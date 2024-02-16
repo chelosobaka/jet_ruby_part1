@@ -12,12 +12,12 @@ RSpec.describe Order do
     describe "##{point}=" do
       it 'convert coordinates to array' do
         order.send "#{point}=", '23.12, 23.23'
-        expect(order.send(point.to_s)).to eq('23.12,23.23')
+        expect(order.send(point.to_s)).to eq('23.12, 23.23')
       end
 
       it 'convert addres to coordinates' do
         order.send "#{point}=", 'Moscow, Russia'
-        expect(order.send(point.to_s)).to eq('55.7504461,37.6174943')
+        expect(order.send(point.to_s)).to eq('55.7504461, 37.6174943')
       end
 
       it 'return error' do
@@ -121,7 +121,7 @@ RSpec.describe Order do
 
   describe '#get_coordinates' do
     ['moscow, russia', ' Москва Россия   ', 'Russia    москва'].each do |location|
-      it { expect(order.send(:get_coordinates, location)).to eq('55.7504461,37.6174943') }
+      it { expect(order.send(:get_coordinates, location)).to eq('55.7504461, 37.6174943') }
     end
 
     it { expect { order.send(:get_coordinates, 'fgsd323ffs') }.to raise_error(StandardError) }

@@ -10,7 +10,7 @@ class Order
 
   def origins=(origins)
     @origins = if coordinates?(origins)
-                 origins.gsub(/\s+/, '')
+                 origins.gsub(/\s+/, '').gsub(/,/, ', ')
                else
                  get_coordinates(origins)
                end
@@ -18,7 +18,7 @@ class Order
 
   def destinations=(destinations)
     @destinations = if coordinates?(destinations)
-                      destinations.gsub(/\s+/, '')
+                      destinations.gsub(/\s+/, '').gsub(/,/, ', ')
                     else
                       get_coordinates(destinations)
                     end
@@ -38,8 +38,8 @@ class Order
   # return value in meters
   def calc_distance
     path = 'https://api-v2.distancematrix.ai/maps/api/distancematrix/json?' \
-           "origins=#{origins}&" \
-           "destinations=#{destinations}&key=#{distancematrix_api_key}"
+           "origins=#{origins.gsub(/\s+/, '')}&" \
+           "destinations=#{destinations.gsub(/\s+/, '')}&key=#{distancematrix_api_key}"
     url = URI.parse(URI::Parser.new.escape(path))
     response = JSON.parse(Net::HTTP.get(url))
     distance = response.dig('rows', 0, 'elements', 0, 'distance', 'value')
@@ -68,18 +68,18 @@ class Order
   end
 
   def coordinates?(value)
-    /^[-+]?\d+\.\d+,\s*[-+]?\d+\.\d+$/.match?(value)
+    /^[-+]?\d+\.\d+,\s*[-+]?\d+\.\d+$/.match?(value.strip)
   end
 
   def get_coordinates(address)
-    address.strip!
+    address = address.strip
     address = address.gsub(/\s+/, '+') || address
     path = "https://api-v2.distancematrix.ai/maps/api/geocode/json?address=#{address}&key=#{geocoder_api_key}"
     url = URI.parse(URI::Parser.new.escape(path))
     response = JSON.parse(Net::HTTP.get(url))
     location = response.dig('result', 0, 'geometry', 'location') || raise(StandardError)
 
-    "#{location['lat']},#{location['lng']}"
+    "#{location['lat']}, #{location['lng']}"
   rescue StandardError
     raise StandardError, "Couldn't get coordinates"
   end
