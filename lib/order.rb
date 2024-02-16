@@ -10,7 +10,7 @@ class Order
 
   def origins=(origins)
     @origins = if coordinates?(origins)
-                 origins.gsub(/\s+/, '') || origins
+                 origins.gsub(/\s+/, '')
                else
                  get_coordinates(origins)
                end
@@ -18,7 +18,7 @@ class Order
 
   def destinations=(destinations)
     @destinations = if coordinates?(destinations)
-                      destinations.gsub(/\s+/, '') || destinations
+                      destinations.gsub(/\s+/, '')
                     else
                       get_coordinates(destinations)
                     end
