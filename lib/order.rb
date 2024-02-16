@@ -9,11 +9,19 @@ class Order
   attr_reader :origins, :destinations
 
   def origins=(origins)
-    @origins = coordinates?(origins) ? origins.split(/,\s*/).map(&:to_f) : get_coordinates(origins)
+    @origins = if coordinates?(origins)
+                 origins.gsub(/\s+/, '') || origins
+               else
+                 get_coordinates(origins)
+               end
   end
 
   def destinations=(destinations)
-    @destinations = coordinates?(destinations) ? destinations.split(/,\s*/).map(&:to_f) : get_coordinates(destinations)
+    @destinations = if coordinates?(destinations)
+                      destinations.gsub(/\s+/, '') || destinations
+                    else
+                      get_coordinates(destinations)
+                    end
   end
 
   def calc_order
@@ -30,8 +38,8 @@ class Order
   # return value in meters
   def calc_distance
     path = 'https://api-v2.distancematrix.ai/maps/api/distancematrix/json?' \
-           "origins=#{origins.join(',')}&" \
-           "destinations=#{destinations.join(',')}&key=#{distancematrix_api_key}"
+           "origins=#{origins}&" \
+           "destinations=#{destinations}&key=#{distancematrix_api_key}"
     url = URI.parse(URI::Parser.new.escape(path))
     response = JSON.parse(Net::HTTP.get(url))
     distance = response.dig('rows', 0, 'elements', 0, 'distance', 'value')
@@ -71,7 +79,7 @@ class Order
     response = JSON.parse(Net::HTTP.get(url))
     location = response.dig('result', 0, 'geometry', 'location') || raise(StandardError)
 
-    [location['lat'].to_f, location['lng'].to_f]
+    "#{location['lat']},#{location['lng']}"
   rescue StandardError
     raise StandardError, "Couldn't get coordinates"
   end
